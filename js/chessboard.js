@@ -3,21 +3,32 @@ export default {
 	highlight
 };
 
-var tiles = [];
+var diagonals = [];
+var highlighted = [];
+var tileDiagonals = new Map();
 
 // ****************************
 
 function draw(boardEl) {
+	// setting up my diagonals data structure
+	for (let i = 0; i < 30; i++) {
+		diagonals.push([]);
+	}
+
 	for (let i = 0; i < 8; i++) {
 		let rowEl = document.createElement("div");
-		let rowTiles = [];
-		tiles.push(rowTiles);
 		for (let j = 0; j < 8; j++) {
 			let tileEl = document.createElement("div");
-			tileEl.dataset.row = i;
-			tileEl.dataset.col = j;
 			rowEl.appendChild(tileEl);
-			rowTiles.push(tileEl);
+
+
+			let majorDiag = diagonals[7 - (i - j)];
+			let  minorDiag = diagonals[15 + (i + j)];
+
+			majorDiag.push(tileEl);
+			minorDiag.push(tileEl);
+
+			tileDiagonals.set(tileEl, [ majorDiag, minorDiag ]);
 		}
 		boardEl.appendChild(rowEl);
 	}
@@ -25,40 +36,20 @@ function draw(boardEl) {
 
 function highlight(tileEl) {
 	// clear all currently highlighted tiles
-	for (let row of tiles) {
-		for (let el of row) {
-		el.classList.remove("highlighted");
+	for (let diagonal of highlighted) {
+		for (let el of diagonal) {
+			el.classList.remove("highlighted");
 		}
 	}
 
 	if (tileEl) {
-		let tileRowIdx = Number(tileEl.dataset.row);
-		let tileColIdx = Number(tileEl.dataset.col);
+		highlighted = tileDiagonals.get(tileEl);
 
-		// highlight in the up-left direction
-		for (let i = tileRowIdx, j = tileColIdx; i >= 0 && j >= 0; i--, j--) {
-			let el = tiles[i][j];
-			el.classList.add("highlighted");
+		for (let diagonal of highlighted) {
+			for (let el of diagonal) {
+				el.classList.add("highlighted");
+			}
 		}
-
-		// highlight in the up-right direction
-		for (let i = tileRowIdx, j = tileColIdx; i >= 0 && j < 8; i--, j++) {
-			let el = tiles[i][j];
-			el.classList.add("highlighted");
-		}
-
-		// highlight in the down-left direction
-		for (let i = tileRowIdx, j = tileColIdx; i < 8 && j >= 0; i++, j--) {
-			let el = tiles[i][j];
-			el.classList.add("highlighted");
-		}
-
-		// highlight in the down-right direction
-		for (let i = tileRowIdx, j = tileColIdx; i < 8 && j < 8; i++, j++) {
-			let el = tiles[i][j];
-			el.classList.add("highlighted");
-		}
-
 
 	}
 
